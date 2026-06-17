@@ -1,0 +1,58 @@
+# Ambiente virtual
+venv/
+.env/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# VS Code
+.vscode/
+
+# Streamlit
+.streamlit/secrets.toml
+
+# Logs
+*.log
+
+# Banco SQLite (caso use futuramente)
+*.db
+*.sqlite
+*.sqlite3
+
+# Arquivos temporários
+temp/
+tmp/
+
+# Windows
+Thumbs.db
+desktop.ini
+
+# Mac
+.DS_Store
+
+# Uploads temporários
+uploads/temp/
+
+# Excel temporário
+~$*.xlsx
+~$*.xls
+
+# Backup
+backup/
+backups/
+
+# Cache
+.cache/
+
+# Pytest
+.pytest_cache/
+
+# Build
+dist/
+build/
+
+# GitHub
+.github/*.secret
