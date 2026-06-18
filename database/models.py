@@ -103,3 +103,82 @@ class Historico(Base):
     acao = Column(Text)
 
     data_hora = Column(DateTime, default=datetime.utcnow)
+
+from sqlalchemy import Boolean, Date
+
+
+class Isometrico(Base):
+    __tablename__ = "isometricos"
+
+    id = Column(Integer, primary_key=True)
+
+    projeto_id = Column(
+        Integer,
+        ForeignKey("projetos.id"),
+        nullable=False
+    )
+
+    desenho = Column(
+        String(100),
+        nullable=False
+    )
+
+    revisao = Column(
+        Integer,
+        default=0
+    )
+
+    revisao_origem = Column(
+        Integer,
+        nullable=True
+    )
+
+    data_emissao = Column(
+        Date,
+        nullable=False
+    )
+
+    data_revisao = Column(
+        Date,
+        nullable=True
+    )
+
+    motivo_revisao = Column(
+        String(500),
+        nullable=True
+    )
+
+    sistema = Column(
+        String(100),
+        nullable=True
+    )
+
+    area = Column(
+        String(100),
+        nullable=True
+    )
+
+    qtd_spools = Column(
+        Integer,
+        default=0
+    )
+
+    qtd_juntas = Column(
+        Integer,
+        default=0
+    )
+
+    status = Column(
+        String(50),
+        default="Planejado"
+    )
+
+    ativo = Column(
+        Boolean,
+        default=True
+    )
+
+    data_cadastro = Column(
+        DateTime,
+        default=datetime.utcnow
+    )

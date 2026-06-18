@@ -3,7 +3,7 @@ import streamlit as st
 
 def render():
 
-    st.title("🛡️ Qualidade")
+    st.title("🛡️ Produção")
 
     st.info(
         "Módulo em construção."
