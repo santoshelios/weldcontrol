@@ -25,30 +25,39 @@ def obter_kpis_projeto(projeto_id):
             .scalar()
         ) or 0
 
-        evs = (
-            db.query(func.count(Junta.id))
-            .filter(
-                Junta.projeto_id == projeto_id,
-                Junta.evs_real.isnot(None)
-            )
+        evs_real = (
+            db.query(func.sum(Junta.evs_real))
+            .filter(Junta.projeto_id == projeto_id)
             .scalar()
         ) or 0
 
-        lp = (
-            db.query(func.count(Junta.id))
-            .filter(
-                Junta.projeto_id == projeto_id,
-                Junta.lp_real.isnot(None)
-            )
+        evs_pend = (
+            db.query(func.sum(Junta.evs_pend))
+            .filter(Junta.projeto_id == projeto_id)
             .scalar()
         ) or 0
 
-        us = (
-            db.query(func.count(Junta.id))
-            .filter(
-                Junta.projeto_id == projeto_id,
-                Junta.us_real.isnot(None)
-            )
+        lp_real = (
+            db.query(func.sum(Junta.lp_real))
+            .filter(Junta.projeto_id == projeto_id)
+            .scalar()
+        ) or 0
+
+        lp_pend = (
+            db.query(func.sum(Junta.lp_pend))
+            .filter(Junta.projeto_id == projeto_id)
+            .scalar()
+        ) or 0
+
+        us_real = (
+            db.query(func.sum(Junta.us_real))
+            .filter(Junta.projeto_id == projeto_id)
+            .scalar()
+        ) or 0
+
+        us_pend = (
+            db.query(func.sum(Junta.us_pend))
+            .filter(Junta.projeto_id == projeto_id)
             .scalar()
         ) or 0
 
@@ -63,11 +72,17 @@ def obter_kpis_projeto(projeto_id):
         return {
             "total": total,
             "soldadas": soldadas,
-            "evs": evs,
-            "lp": lp,
-            "us": us,
             "pendentes": pendentes,
-            "percentual": percentual
+            "percentual": percentual,
+
+            "evs_real": evs_real,
+            "evs_pend": evs_pend,
+
+            "lp_real": lp_real,
+            "lp_pend": lp_pend,
+
+            "us_real": us_real,
+            "us_pend": us_pend
         }
 
     finally:
@@ -231,12 +246,25 @@ def obter_tabela_analitica(projeto_id):
 
         dados = (
             db.query(
-                Junta.sigla,
+                Junta.sigla.label("fluido"),
+
                 func.count(Junta.id).label("total"),
-                func.count(Junta.soldador_raiz).label("soldadas")
+
+                func.count(Junta.soldador_raiz).label("soldadas"),
+
+                func.sum(Junta.evs_real).label("evs_real"),
+                func.sum(Junta.evs_pend).label("evs_pend"),
+
+                func.sum(Junta.lp_real).label("lp_real"),
+                func.sum(Junta.lp_pend).label("lp_pend"),
+
+                func.sum(Junta.us_real).label("us_real"),
+                func.sum(Junta.us_pend).label("us_pend")
             )
             .filter(
-                Junta.projeto_id == projeto_id
+                Junta.projeto_id == projeto_id,
+                Junta.sigla.isnot(None),
+                Junta.sigla != ""
             )
             .group_by(
                 Junta.sigla
@@ -249,21 +277,47 @@ def obter_tabela_analitica(projeto_id):
 
         resultado = []
 
-        for sigla, total, soldadas in dados:
+        for (
+            fluido,
+            total,
+            soldadas,
+            evs_real,
+            evs_pend,
+            lp_real,
+            lp_pend,
+            us_real,
+            us_pend
+        ) in dados:
 
             pendentes = total - soldadas
 
             percentual = (
-                round((soldadas / total) * 100, 1)
+                round(
+                    (soldadas / total) * 100,
+                    1
+                )
                 if total > 0
                 else 0
             )
 
             resultado.append({
-                "Fluido": sigla,
+
+                "Fluido": fluido,
+
                 "Qtde_Juntas": total,
+
+                "EVS_Real": evs_real or 0,
+                "EVS_Pend": evs_pend or 0,
+
+                "LP_Real": lp_real or 0,
+                "LP_Pend": lp_pend or 0,
+
+                "US_Real": us_real or 0,
+                "US_Pend": us_pend or 0,
+
                 "Soldadas": soldadas,
                 "Pendentes": pendentes,
+
                 "Avanço_%": percentual
             })
 

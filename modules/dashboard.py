@@ -2,6 +2,20 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
+st.markdown("""
+<style>
+
+div[data-testid="stMetric"]{
+    background:#0f172a;
+    padding:15px;
+    border-radius:12px;
+    border:1px solid rgba(255,255,255,0.08);
+}
+
+</style>
+""", unsafe_allow_html=True)
+from io import BytesIO
+
 from database.projects import listar_projetos
 
 from database.dashboard_queries import (
@@ -11,6 +25,25 @@ from database.dashboard_queries import (
     obter_top_soldadores,
     obter_tabela_analitica
 )
+
+st.markdown("""
+<style>
+
+div[data-testid="metric-container"]{
+    background: linear-gradient(135deg,#0f172a,#1e293b);
+    border:1px solid rgba(255,255,255,0.08);
+    border-radius:14px;
+    padding:12px;
+    box-shadow:0 4px 12px rgba(0,0,0,0.15);
+}
+
+div[data-testid="metric-container"] label{
+    color:#cbd5e1 !important;
+    font-weight:600;
+}
+
+</style>
+""", unsafe_allow_html=True)
 
 
 def render():
@@ -45,7 +78,6 @@ def render():
 
     projeto_id = projeto_dict[projeto]
 
-    # filtros preparados para próxima etapa
     with col_f2:
         st.multiselect(
             "Fluido",
@@ -72,7 +104,7 @@ def render():
     )
 
     # =====================================================
-    # CARDS
+    # CARDS PRINCIPAIS
     # =====================================================
 
     st.divider()
@@ -87,22 +119,65 @@ def render():
 
     with c2:
         st.metric(
-            "📈 Avanço",
-            f"{kpis['percentual']}%"
-        )
-
-    with c3:
-        st.metric(
             "🔥 Soldadas",
             f"{kpis['soldadas']:,}".replace(",", ".")
         )
 
-    with c4:
+    with c3:
         st.metric(
             "⏳ Pendentes",
             f"{kpis['pendentes']:,}".replace(",", ".")
         )
 
+    with c4:
+        st.metric(
+            "📈 Avanço",
+            f"{kpis['percentual']}%"
+        )
+
+    # =====================================================
+    # ENSAIOS
+    # =====================================================
+
+    e1, e2, e3, e4, e5, e6 = st.columns(6)
+
+    with e1:
+        st.metric(
+            "🧪 EVS Real",
+            f"{kpis['evs_real']:,}".replace(",", ".")
+        )
+
+    with e2:
+        st.metric(
+            "📋 EVS Pend",
+            f"{kpis['evs_pend']:,}".replace(",", ".")
+        )
+
+    with e3:
+        st.metric(
+            "🔬 LP Real",
+            f"{kpis['lp_real']:,}".replace(",", ".")
+        )
+
+    with e4:
+        st.metric(
+            "📋 LP Pend",
+            f"{kpis['lp_pend']:,}".replace(",", ".")
+        )
+
+    with e5:
+        st.metric(
+            "📡 US Real",
+            f"{kpis['us_real']:,}".replace(",", ".")
+        )
+
+    with e6:
+        st.metric(
+            "📋 US Pend",
+            f"{kpis['us_pend']:,}".replace(",", ".")
+        )
+
+   
     # =====================================================
     # FLUIDO
     # =====================================================
@@ -242,8 +317,6 @@ def render():
 
     st.divider()
 
-    st.subheader("📋 Tabela Analítica")
-
     tabela = obter_tabela_analitica(
         projeto_id
     )
@@ -254,8 +327,115 @@ def render():
             tabela
         )
 
+        df_tabela = df_tabela[
+            df_tabela["Fluido"].notna()
+        ]
+
+        df_tabela = df_tabela[
+            df_tabela["Fluido"].astype(str).str.strip() != ""
+        ]
+
+        df_tabela = df_tabela.rename(
+        columns={
+        "Fluido": "Fluido",
+        "Qtde_Juntas": "Qtde Juntas",
+
+        "EVS_Real": "EVS Real",
+        "EVS_Pend": "EVS Pend",
+
+        "LP_Real": "LP Real",
+        "LP_Pend": "LP Pend",
+
+        "US_Real": "US Real",
+        "US_Pend": "US Pend",
+
+        "Soldadas": "Soldadas",
+        "Pendentes": "Pendentes",
+        "Avanço_%": "Avanço %"
+    }
+)
+
+        df_tabela = df_tabela[
+    [
+        "Fluido",
+        "Qtde Juntas",
+
+        "EVS Real",
+        "EVS Pend",
+
+        "LP Real",
+        "LP Pend",
+
+        "US Real",
+        "US Pend",
+
+        "Avanço %",
+        "Soldadas",
+        "Pendentes"
+    ]
+]
+
+        df_tabela = df_tabela.sort_values(
+            by="Qtde Juntas",
+            ascending=False
+        )
+
+        df_tabela["Avanço %"] = (
+            df_tabela["Avanço %"]
+            .astype(float)
+            .round(1)
+            .astype(str)
+            + "%"
+        )
+
+        output = BytesIO()
+
+        with pd.ExcelWriter(
+            output,
+            engine="openpyxl"
+        ) as writer:
+
+            df_tabela.to_excel(
+                writer,
+                index=False,
+                sheet_name="Analise"
+            )
+
+        col_titulo, col_espaco, col_botao = st.columns([8, 3, 1])
+
+        with col_titulo:
+            st.subheader("📋 Tabela Analítica")
+
+        with col_botao:
+            st.download_button(
+        label="📥 Exportar",
+        data=output.getvalue(),
+        file_name="Analise_WeldControl.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+
         st.dataframe(
             df_tabela,
             use_container_width=True,
             hide_index=True
+        )
+
+        total_juntas = pd.to_numeric(
+            df_tabela["Qtde Juntas"]
+        ).sum()
+
+        total_soldadas = pd.to_numeric(
+            df_tabela["Soldadas"]
+        ).sum()
+
+        total_pendentes = pd.to_numeric(
+            df_tabela["Pendentes"]
+        ).sum()
+
+        st.caption(
+            f"""
+📌 Total de Juntas: {total_juntas:,}
+ | Soldadas: {total_soldadas:,}
+ | Pendentes: {total_pendentes:,}
+""".replace(",", ".")
         )

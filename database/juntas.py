@@ -98,6 +98,17 @@ def limpar_data(valor):
     return valor
 
 
+def limpar_inteiro(valor):
+
+    if pd.isna(valor):
+        return 0
+
+    try:
+        return int(float(valor))
+    except:
+        return 0
+
+
 def calcular_status(row):
 
     soldador = limpar_valor(
@@ -170,19 +181,37 @@ def importar_dataframe_juntas(df, projeto_id):
                     row.get("RELATÓRIO EVS")
                 ),
 
-                evs_real=None,
+                evs_real=limpar_inteiro(
+                    row.get("EVS_ REAL.")
+                ),
+
+                evs_pend=limpar_inteiro(
+                    row.get("EVS_PEND")
+                ),
 
                 lp_relatorio=limpar_valor(
                     row.get("RELATÓRIO LP")
                 ),
 
-                lp_real=None,
+                lp_real=limpar_inteiro(
+                    row.get("LP_ REAL.")
+                ),
+
+                lp_pend=limpar_inteiro(
+                    row.get("LP_PEND.")
+                ),
 
                 us_relatorio=limpar_valor(
                     row.get("RELATÓRIO US")
                 ),
 
-                us_real=None,
+                us_real=limpar_inteiro(
+                    row.get("US-REAL.")
+                ),
+
+                us_pend=limpar_inteiro(
+                    row.get("US_PEND.")
+                ),
 
                 observacoes=limpar_valor(
                     row.get("OBSERVAÇÕES")

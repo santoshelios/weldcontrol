@@ -74,13 +74,16 @@ class Junta(Base):
     data_solda = Column(Date)
 
     evs_relatorio = Column(String(100))
-    evs_real = Column(Date)
+    evs_real = Column(Integer, default=0)
+    evs_pend = Column(Integer, default=0)
 
     lp_relatorio = Column(String(100))
-    lp_real = Column(Date)
+    lp_real = Column(Integer, default=0)
+    lp_pend = Column(Integer, default=0)
 
     us_relatorio = Column(String(100))
-    us_real = Column(Date)
+    us_real = Column(Integer, default=0)
+    us_pend = Column(Integer, default=0)
 
     fluxoteste = Column(String(100))
     relatorio_th = Column(String(100))
