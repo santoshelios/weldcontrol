@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
+
 st.markdown("""
 <style>
 
@@ -15,7 +16,6 @@ div[data-testid="stMetric"]{
 </style>
 """, unsafe_allow_html=True)
 from io import BytesIO
-
 from database.projects import listar_projetos
 
 from database.dashboard_queries import (
@@ -23,8 +23,11 @@ from database.dashboard_queries import (
     obter_tipo_junta,
     obter_fluido,
     obter_top_soldadores,
-    obter_tabela_analitica
+    obter_tabela_analitica,
+    listar_fluidos,
+    listar_tipos_junta
 )
+
 
 st.markdown("""
 <style>
@@ -79,18 +82,18 @@ def render():
     projeto_id = projeto_dict[projeto]
 
     with col_f2:
-        st.multiselect(
-            "Fluido",
-            [],
-            disabled=True
-        )
+
+        filtro_fluido = st.multiselect(
+        "Fluido",
+        options=listar_fluidos(projeto_id)
+    )
 
     with col_f3:
-        st.multiselect(
-            "Tipo Junta",
-            [],
-            disabled=True
-        )
+
+        filtro_tipo = st.multiselect(
+        "Tipo Junta",
+        options=listar_tipos_junta(projeto_id)
+    )
 
     with col_f4:
         st.multiselect(

@@ -326,3 +326,54 @@ def obter_tabela_analitica(projeto_id):
     finally:
 
         db.close()
+
+def listar_fluidos(projeto_id):
+
+    db = SessionLocal()
+
+    try:
+
+        return [
+            r[0]
+            for r in (
+                db.query(Junta.sigla)
+                .filter(
+                    Junta.projeto_id == projeto_id,
+                    Junta.sigla.isnot(None),
+                    Junta.sigla != ""
+                )
+                .distinct()
+                .order_by(Junta.sigla)
+                .all()
+            )
+        ]
+
+    finally:
+
+        db.close()
+
+
+def listar_tipos_junta(projeto_id):
+
+    db = SessionLocal()
+
+    try:
+
+        return [
+            r[0]
+            for r in (
+                db.query(Junta.tipo_junta)
+                .filter(
+                    Junta.projeto_id == projeto_id,
+                    Junta.tipo_junta.isnot(None),
+                    Junta.tipo_junta != ""
+                )
+                .distinct()
+                .order_by(Junta.tipo_junta)
+                .all()
+            )
+        ]
+
+    finally:
+
+        db.close()
